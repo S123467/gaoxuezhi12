@@ -411,7 +411,7 @@ with open(config_path, 'w', encoding='utf-8') as f:
                 "description": "BMI超标 + 痰湿质 + 代谢异常",
                 "prefer_strategy": "调理 + 运动联合干预",
                 "constraints": {
-                    "require_exercise": true,
+                    "require_exercise": True,
                     "min_exercise_intensity": "medium"
                 }
             },
