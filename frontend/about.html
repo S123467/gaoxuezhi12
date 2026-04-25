@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于 - 高血脂风险分层预警与干预推荐系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="card p-4">
+                    <div class="card-body">
+                        <h2 class="mb-4">关于本系统</h2>
+
+                        <h4 class="mt-4">项目背景</h4>
+                        <p>
+                            本系统基于数模竞赛论文《<strong>基于中西医融合信息的高血脂风险识别、分层预警与干预优化研究</strong>》（队伍编号: CMC2604725）的研究成果开发，
+                            将论文中的数学模型完整实现为可运行的软件系统，用于高血脂风险评估和个体化干预推荐。
+                        </p>
+
+                        <h4 class="mt-4">核心算法（完全复现论文）</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>模块</th>
+                                    <th>算法</th>
+                                    <th>论文结论</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>关键风险因素识别</td>
+                                    <td>Lasso-Logistic + XGBoost-SHAP + 随机森林交叉验证</td>
+                                    <td>TG、TC、LDL-C、HDL-C、血尿酸是主要代谢主轴，痰湿质与BMI有交互放大效应</td>
+                                </tr>
+                                <tr>
+                                    <td>三级风险分层预警</td>
+                                    <td>CART决策树 + 中西医融合先验</td>
+                                    <td>5折交叉验证准确率 95.00%，关键阈值: 痰湿≈60分、TG≈1.7、TC≈6.2、活动能力≈40</td>
+                                </tr>
+                                <tr>
+                                    <td>个体化干预优化</td>
+                                    <td>画像分型 + 约束组合优化</td>
+                                    <td>不同分型患者推荐不同策略，6个月总成本≤2000元</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4">患者分型与推荐策略</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>患者类型</th>
+                                    <th>特征</th>
+                                    <th>推荐策略</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>代谢异常主导型</td>
+                                    <td>血脂异常为主，体质和活动能力尚可</td>
+                                    <td>优先强化调理</td>
+                                </tr>
+                                <tr>
+                                    <td>肥胖并发型</td>
+                                    <td>BMI超标 + 痰湿质 + 代谢异常</td>
+                                    <td>调理 + 运动联合干预</td>
+                                </tr>
+                                <tr>
+                                    <td>功能受限型</td>
+                                    <td>活动能力下降 + 高龄 + 多种并发症</td>
+                                    <td>低强度稳步改善方案</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4">系统架构</h4>
+                        <ul>
+                            <li><strong>后端:</strong> Python Flask，完整实现论文三大算法模块，提供REST API</li>
+                            <li><strong>前端:</strong> HTML + Bootstrap 5 + 原生JavaScript，前后端分离</li>
+                            <li><strong>机器学习:</strong> Scikit-learn + XGBoost + SHAP</li>
+                        </ul>
+
+                        <h4 class="mt-4">软件版本</h4>
+                        <p><strong>高血脂风险分层预警与干预推荐系统 V1.0</strong></p>
+
+                        <div class="alert alert-warning mt-4">
+                            <strong>免责声明:</strong> 本系统基于学术研究成果开发，仅供研究参考使用，输出结果不构成临床诊断建议。如有健康问题，请咨询专业医疗机构和医师。
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="index.html" class="btn btn-primary">返回评估</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

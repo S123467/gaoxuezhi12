@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高血脂风险分层预警与干预推荐系统 V1.0</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .hero {
+            background: linear-gradient(135deg, #1e5799 0%, #207cca 51%, #7db9e8 100%);
+            color: white;
+            padding: 50px 0;
+            margin-bottom: 30px;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .step-indicator {
+            display: flex;
+            margin-bottom: 30px;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background-color: #e9ecef;
+            margin: 0 5px;
+            border-radius: 5px;
+        }
+        .step.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .result-card {
+            border-left: 4px solid;
+            margin-bottom: 20px;
+        }
+        .result-card.low {
+            border-left-color: #28a745;
+            background-color: #f8fff9;
+        }
+        .result-card.medium {
+            border-left-color: #ffc107;
+            background-color: #fffbeb;
+        }
+        .result-card.high {
+            border-left-color: #dc3545;
+            background-color: #fff5f5;
+        }
+        .risk-badge {
+            font-size: 1.2rem;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            color: white;
+        }
+        .api-base-url {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="container text-center">
+            <h1>高血脂风险分层预警与干预推荐系统</h1>
+            <p class="lead">V1.0 - 基于中西医融合信息的智能化健康评估</p>
+            <p>论文来源: 基于中西医融合信息的高血脂风险识别、分层预警与干预优化研究 | 队伍编号: CMC2604725</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="card p-4 mb-4">
+                    <div class="step-indicator">
+                        <div class="step active" id="step1-indicator">
+                            1. 信息录入
+                        </div>
+                        <div class="step" id="step2-indicator">
+                            2. 风险计算
+                        </div>
+                        <div class="step" id="step3-indicator">
+                            3. 风险结果
+                        </div>
+                        <div class="step" id="step4-indicator">
+                            4. 干预推荐
+                        </div>
+                    </div>
+
+                    <!-- API地址配置 -->
+                    <div class="api-base-url mb-4">
+                        <label for="apiUrl"><strong>后端API地址:</strong></label>
+                        <input type="text" class="form-control" id="apiUrl" 
+                               value="http://localhost:5000/api" 
+                               placeholder="http://localhost:5000/api">
+                    </div>
+
+                    <!-- 步骤1: 信息录入 -->
+                    <div id="step1">
+                        <h4 class="mb-3">基本信息</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="age" class="form-label">年龄 (岁)</label>
+                                <input type="number" class="form-control" id="age" value="55" min="18" max="120">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">性别</label>
+                                <div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="gender" id="genderMale" value="1" checked>
+                                        <label class="form-check-label" for="genderMale">男</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="0">
+                                        <label class="form-check-label" for="genderFemale">女</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="height" class="form-label">身高 (cm)</label>
+                                <input type="number" class="form-control" id="height" value="170" min="100" max="220">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="weight" class="form-label">体重 (kg)</label>
+                                <input type="number" class="form-control" id="weight" value="75" min="30" max="200" step="0.1">
+                            </div>
+                        </div>
+
+                        <h4 class="mb-3 mt-4">生化指标（最近一次体检）</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="tg" class="form-label">甘油三酯 (TG, mmol/L)</label>
+                                <input type="number" class="form-control" id="tg" value="1.5" step="0.01">
+                                <div class="form-text">参考范围: 0.56-1.70 mmol/L</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="tc" class="form-label">总胆固醇 (TC, mmol/L)</label>
+                                <input type="number" class="form-control" id="tc" value="5.2" step="0.01">
+                                <div class="form-text">参考范围: 2.8-5.2 mmol/L</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="hdl_c" class="form-label">高密度脂蛋白 (HDL-C, mmol/L)</label>
+                                <input type="number" class="form-control" id="hdl_c" value="1.2" step="0.01">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="ldl_c" class="form-label">低密度脂蛋白 (LDL-C, mmol/L)</label>
+                                <input type="number" class="form-control" id="ldl_c" value="3.4" step="0.01">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="urea_acid" class="form-label">血尿酸 (μmol/L)</label>
+                                <input type="number" class="form-control" id="urea_acid" value="360" step="1">
+                            </div>
+                        </div>
+
+                        <h4 class="mb-3 mt-4">中医体质与活动能力</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="tan_score" class="form-label">痰湿体质积分 (0-100分)</label>
+                                <input type="number" class="form-control" id="tan_score" value="45" min="0" max="100">
+                                <div class="form-text">&lt;40分平和，&gt;60分明显痰湿偏颇</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="adl_score" class="form-label">ADL活动能力评分 (0-100分)</label>
+                                <input type="number" class="form-control" id="adl_score" value="55" min="0" max="100">
+                                <div class="form-text">分数越高能力越好，≤40分明显受限</div>
+                            </div>
+                        </div>
+
+                        <h4 class="mb-3 mt-4">干预预算</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="budget" class="form-label">6个月预算上限 (元)</label>
+                                <input type="number" class="form-control" id="budget" value="2000" min="0" max="5000" step="100">
+                                <div class="form-text">论文默认值: 2000元/6个月</div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 col-md-6 offset-md-3 mt-4">
+                            <button class="btn btn-primary btn-lg" onclick="nextStep()">下一步: 计算风险</button>
+                            <a href="about.html" class="btn btn-outline-secondary">关于系统</a>
+                        </div>
+                    </div>
+
+                    <!-- 步骤2: 风险计算 -->
+                    <div id="step2" style="display: none;">
+                        <h4 class="mb-3">正在调用后端算法计算...</h4>
+                        <div class="text-center p-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3">正在执行以下计算:</p>
+                            <ul class="text-start d-inline-block">
+                                <li>根据输入特征识别异常风险因素</li>
+                                <li>CART决策树三级风险分层</li>
+                                <li>自动患者画像分型</li>
+                                <li>约束组合优化寻找最优干预方案</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 步骤3: 风险结果 -->
+                    <div id="step3" style="display: none;">
+                        <h4 class="mb-3">风险分层结果</h4>
+                        <div class="text-center mb-4">
+                            <div id="riskBadge" class="risk-badge"></div>
+                        </div>
+                        
+                        <div id="riskResultCard" class="result-card">
+                            <p id="riskDescription"></p>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <strong>异常风险因素</strong>
+                            </div>
+                            <div class="card-body" id="riskFactors">
+                                <!-- JS填充 -->
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <strong>患者画像分型</strong>
+                            </div>
+                            <div class="card-body">
+                                <h5 id="patientTypeName"></h5>
+                                <p id="patientTypeDescription"></p>
+                                <p class="mb-0"><strong>推荐策略:</strong> <span id="patientStrategy"></span></p>
+                                <div class="alert alert-info mt-2 mb-0">
+                                    <small id="paperConclusion"></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <button class="btn btn-secondary w-100" onclick="prevStep()">上一步: 修改信息</button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-primary w-100" onclick="showIntervention()">下一步: 查看干预推荐</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 步骤4: 干预推荐 -->
+                    <div id="step4" style="display: none;">
+                        <h4 class="mb-3">个体化干预推荐</h4>
+
+                        <div class="card mb-4 border-success">
+                            <div class="card-header bg-success text-white">
+                                <strong>📌 推荐最优方案 (预算约束下效果最大化)</strong>
+                            </div>
+                            <div class="card-body" id="optimalRecommendation">
+                                <!-- JS填充 -->
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <strong>其他备选方案</strong>
+                            </div>
+                            <div class="card-body" id="alternativePlans">
+                                <!-- JS填充 -->
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <strong>输入信息摘要</strong>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>年龄</strong></td>
+                                            <td id="summaryAge"></td>
+                                            <td><strong>BMI</strong></td>
+                                            <td id="summaryBmi"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>痰湿积分</strong></td>
+                                            <td id="summaryTan"></td>
+                                            <td><strong>活动能力</strong></td>
+                                            <td id="summaryActivity"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>TG</strong></td>
+                                            <td id="summaryTg"></td>
+                                            <td><strong>TC</strong></td>
+                                            <td id="summaryTc"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>预算上限</strong></td>
+                                            <td colspan="3" id="summaryBudget"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mb-4">
+                            <strong>模型信息:</strong> CART决策树风险分层，论文交叉验证准确率 95.00%。本系统仅供研究参考，不作为临床诊断依据。如有不适，请咨询专业医师。
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button class="btn btn-secondary w-100" onclick="prevFromIntervention()">上一步: 返回风险结果</button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-primary w-100" onclick="resetForm()">重新开始评估</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentStep = 1;
+        let resultData = null;
+
+        function showStep(step) {
+            // 隐藏所有步骤
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`step${i}`).style.display = i === step ? 'block' : 'none';
+                document.getElementById(`step${i}-indicator`).classList.toggle('active', i <= step);
+            }
+            currentStep = step;
+        }
+
+        function nextStep() {
+            if (currentStep === 1) {
+                showStep(2);
+                calculateRisk();
+            }
+        }
+
+        function prevStep() {
+            showStep(currentStep - 1);
+        }
+
+        function prevFromIntervention() {
+            showStep(3);
+        }
+
+        function resetForm() {
+            location.reload();
+        }
+
+        function getApiBaseUrl() {
+            return document.getElementById('apiUrl').value.trim();
+        }
+
+        function calculateRisk() {
+            // 收集表单数据
+            const data = {
+                age: parseInt(document.getElementById('age').value),
+                gender: parseInt(document.querySelector('input[name="gender"]:checked').value),
+                height: parseFloat(document.getElementById('height').value),
+                weight: parseFloat(document.getElementById('weight').value),
+                tan_score: parseFloat(document.getElementById('tan_score').value),
+                tg: parseFloat(document.getElementById('tg').value),
+                tc: parseFloat(document.getElementById('tc').value),
+                hdl_c: parseFloat(document.getElementById('hdl_c').value),
+                ldl_c: parseFloat(document.getElementById('ldl_c').value),
+                urea_acid: parseFloat(document.getElementById('urea_acid').value),
+                adl_score: parseFloat(document.getElementById('adl_score').value),
+                budget: parseInt(document.getElementById('budget').value)
+            };
+
+            const apiUrl = `${getApiBaseUrl()}/predict`;
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.code === 0) {
+                    resultData = result.data;
+                    displayResult(result.data);
+                    showStep(3);
+                } else {
+                    alert(`计算失败: ${result.message}`);
+                    showStep(1);
+                }
+            })
+            .catch(error => {
+                alert(`API调用失败，请检查后端服务是否启动: ${error}`);
+                showStep(1);
+            });
+        }
+
+        function displayResult(data) {
+            // 风险等级
+            const risk = data.risk;
+            document.getElementById('riskBadge').textContent = risk.risk_level_name;
+            document.getElementById('riskBadge').style.backgroundColor = risk.risk_color;
+            document.getElementById('riskDescription').textContent = risk.description;
+            
+            const card = document.getElementById('riskResultCard');
+            card.className = `result-card ${risk.risk_level}`;
+
+            // 风险因素
+            const factorsContainer = document.getElementById('riskFactors');
+            if (risk.risk_factors.length > 0) {
+                let html = '';
+                risk.risk_factors.forEach(factor => {
+                    html += `<div class="factor-item alert alert-warning p-2 mb-2">⚠️ ${factor}</div>`;
+                });
+                factorsContainer.innerHTML = html;
+            } else {
+                factorsContainer.innerHTML = '<p class="text-success">未发现明显异常风险因素 ✅</p>';
+            }
+
+            // 患者分型
+            const pt = data.patient_type;
+            document.getElementById('patientTypeName').textContent = pt.type_name;
+            document.getElementById('patientTypeDescription').textContent = pt.description;
+            document.getElementById('patientStrategy').textContent = pt.recommended_strategy;
+            document.getElementById('paperConclusion').textContent = pt.paper_conclusion;
+        }
+
+        function showIntervention() {
+            const intervention = resultData.intervention;
+            const optimal = intervention.optimal_plan;
+            
+            // 最优推荐
+            let recHtml = `<pre style="white-space: pre-wrap; background: none; border: none; padding: 0;">${intervention.recommendation}</pre>`;
+            recHtml += `<hr><div class="row">`;
+            recHtml += `<div class="col-md-6"><strong>6个月总成本:</strong> ${optimal.total_cost_6months.toFixed(0)} 元</div>`;
+            recHtml += `<div class="col-md-6"><strong>预期总效果:</strong> ${optimal.total_effect_6months.toFixed(1)} 单位</div>`;
+            recHtml += `</div>`;
+            document.getElementById('optimalRecommendation').innerHTML = recHtml;
+
+            // 备选方案
+            const altContainer = document.getElementById('alternativePlans');
+            const alternatives = resultData.intervention.alternatives;
+            if (alternatives && alternatives.length > 1) {
+                let altHtml = '';
+                alternatives.slice(1).forEach((plan, index) => {
+                    altHtml += `<div class="card mb-2">`;
+                    altHtml += `<div class="card-body">`;
+                    altHtml += `<h6>备选 ${index + 1}: ${plan.treatment_name}</h6>`;
+                    altHtml += `<p><strong>运动:</strong> ${plan.exercise_fullname}</p>`;
+                    altHtml += `<p>6个月成本: <strong>${plan.total_cost_6months.toFixed(0)}</strong> 元 | 预期效果: <strong>${plan.total_effect_6months.toFixed(1)}</strong> 单位</p>`;
+                    altHtml += `</div></div>`;
+                });
+                altContainer.innerHTML = altHtml;
+            } else {
+                altContainer.innerHTML = '<p class="text-muted">没有其他备选方案</p>';
+            }
+
+            // 摘要
+            const input = resultData.input;
+            document.getElementById('summaryAge').textContent = `${input.age} 岁`;
+            document.getElementById('summaryBmi').textContent = `${input.bmi} kg/m²`;
+            document.getElementById('summaryTan').textContent = `${input.tan_score} 分`;
+            document.getElementById('summaryActivity').textContent = `${input.activity_score} 分`;
+            document.getElementById('summaryTg').textContent = `${input.tg} mmol/L`;
+            document.getElementById('summaryTc').textContent = `${input.tc} mmol/L`;
+            document.getElementById('summaryBudget').textContent = `${input.budget} 元/6个月`;
+
+            showStep(4);
+        }
+    </script>
+</body>
+</html>
