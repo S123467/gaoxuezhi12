@@ -8,9 +8,10 @@ Version: 1.0
 import sys
 import json
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append("..")
-from typing import Dict
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QDoubleSpinBox, QSpinBox, QRadioButton,
