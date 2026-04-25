@@ -1,3 +1,4 @@
+from typing import Dict
 """
 高血脂风险分层预警与干预推荐系统 - Windows 桌面应用 GUI
 基于 PyQt5 构建，可打包为独立 exe 运行
