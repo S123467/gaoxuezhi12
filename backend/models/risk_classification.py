@@ -364,12 +364,15 @@ class ThreeLevelRiskClassifier(BaseEstimator, ClassifierMixin):
         return self.risk_definitions[risk_level]
 
 
-# 配置文件
-if not os.path.exists('/root/.openclaw/workspace/projects/hyperlipidemia-risk-system/backend/config'):
-    os.makedirs('/root/.openclaw/workspace/projects/hyperlipidemia-risk-system/backend/config')
+# 配置文件 - 使用相对于backend目录的路径
+import os
+config_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config')
+if not os.path.exists(config_dir):
+    os.makedirs(config_dir)
 
 # 复制配置文件
-with open('/root/.openclaw/workspace/projects/hyperlipidemia-risk-system/backend/config/risk_thresholds.json', 'w', encoding='utf-8') as f:
+config_path = os.path.join(config_dir, 'risk_thresholds.json')
+with open(config_path, 'w', encoding='utf-8') as f:
     json.dump({
         "name": "高血脂风险分层阈值配置（来自论文研究结果）",
         "description": "基于CART决策树提取的阈值边界",

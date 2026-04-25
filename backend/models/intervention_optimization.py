@@ -314,11 +314,14 @@ class InterventionOptimizer:
         return "\n".join(lines)
 
 
-# 创建配置文件
-if not os.path.exists('/root/.openclaw/workspace/projects/hyperlipidemia-risk-system/backend/config'):
-    os.makedirs('/root/.openclaw/workspace/projects/hyperlipidemia-risk-system/backend/config')
+# 创建配置文件 - 使用相对于backend目录的路径
+import os
+config_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config')
+if not os.path.exists(config_dir):
+    os.makedirs(config_dir)
 
-with open('/root/.openclaw/workspace/projects/hyperlipidemia-risk-system/backend/config/intervention_costs.json', 'w', encoding='utf-8') as f:
+config_path = os.path.join(config_dir, 'intervention_costs.json')
+with open(config_path, 'w', encoding='utf-8') as f:
     json.dump({
         "name": "干预方案成本和效果参数配置",
         "description": "中医调理等级、运动强度的成本和效果参数，基于论文假设",
